@@ -1,0 +1,241 @@
+/* Violation Dashboard Styles */
+.integrity-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.integrity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.integrity-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.integrity-header .back-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.integrity-header .back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.integrity-header h1 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.header-stats {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.header-stats strong {
+    color: #f87171;
+    font-size: 1.1rem;
+}
+
+/* Filter Section */
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 40px;
+}
+
+.filter-section label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+}
+
+.filter-select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    min-width: 200px;
+    cursor: pointer;
+}
+
+.filter-select option {
+    background: #1a1a2e;
+    color: #ffffff;
+}
+
+/* Content */
+.integrity-content {
+    padding: 0 40px 40px;
+}
+
+.loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.2rem;
+}
+
+/* No Violations */
+.no-violations {
+    text-align: center;
+    padding: 80px 40px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.no-violations-icon {
+    font-size: 64px;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.no-violations h2 {
+    color: #38ef7d;
+    margin: 0 0 10px 0;
+}
+
+.no-violations p {
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
+
+/* Table */
+.integrity-table-container {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.integrity-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.integrity-table th {
+    background: rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.integrity-table td {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+}
+
+.integrity-table tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.integrity-table tr:last-child td {
+    border-bottom: none;
+}
+
+.student-name {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.student-email {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+}
+
+.exam-title {
+    color: #667eea;
+    font-weight: 500;
+}
+
+/* Count Cells */
+.count-cell {
+    font-weight: 600;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .integrity-table-container {
+        overflow-x: auto;
+    }
+
+    .integrity-table {
+        min-width: 700px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .integrity-content,
+    .filter-section {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .integrity-header {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+}
+
+/* Clickable Rows */
+.clickable-row {
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.clickable-row:hover {
+    background: rgba(102, 126, 234, 0.08) !important;
+}
+
+.has-violations-text {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+/* View Report Button */
+.view-report-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.view-report-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
