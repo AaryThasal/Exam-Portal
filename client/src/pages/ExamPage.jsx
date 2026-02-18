@@ -362,88 +362,121 @@ function ExamPage() {
 
     // Active exam screen
     const question = exam.questions[currentQuestion];
+    const answeredCount = Object.keys(selectedAnswers).length;
 
     return (
         <div className={`exam-page exam-active ${isBlurred ? 'blurred' : ''}`}>
+            {/* Top Header Bar */}
             <header className="exam-header">
-                <div className="exam-title">
-                    <h1>{exam.title}</h1>
+                <div className="exam-header-left">
+                    <div className="exam-title">
+                        <span className="exam-title-icon">📝</span>
+                        <h1>{exam.title}</h1>
+                    </div>
                 </div>
-                <div className="exam-timer">
-                    <span className={`timer ${timeRemaining < 60 ? 'timer-warning' : ''}`}>
-                        ⏱️ {formatTime(timeRemaining)}
-                    </span>
+                <div className="exam-header-center">
+                    <div className={`exam-timer ${timeRemaining < 60 ? 'timer-critical' : timeRemaining < 300 ? 'timer-warn' : ''}`}>
+                        <span className="timer-icon">⏱️</span>
+                        <span className="timer-value">{formatTime(timeRemaining)}</span>
+                        <span className="timer-label">remaining</span>
+                    </div>
                 </div>
-                <div className="exam-violations">
-                    <span className={`violations-badge ${totalViolations > 0 ? 'has-violations' : ''}`}>
-                        ⚠️ Violations: {totalViolations}
-                    </span>
+                <div className="exam-header-right">
+                    <div className={`violations-badge ${totalViolations > 0 ? 'has-violations' : ''}`}>
+                        <span className="violations-icon">⚠️</span>
+                        <span className="violations-count">{totalViolations}</span>
+                        <span className="violations-label">Violation{totalViolations !== 1 ? 's' : ''}</span>
+                    </div>
                 </div>
             </header>
 
-            <div className="question-nav">
-                {exam.questions.map((_, index) => (
-                    <button
-                        key={index}
-                        className={`question-nav-btn ${currentQuestion === index ? 'active' : ''} ${selectedAnswers[index] !== undefined ? 'answered' : ''}`}
-                        onClick={() => setCurrentQuestion(index)}
-                    >
-                        {index + 1}
-                    </button>
-                ))}
+            {/* Main Body — Sidebar + Content */}
+            <div className="exam-body">
+                {/* Sidebar: question nav + progress */}
+                <aside className="exam-sidebar">
+                    <div className="sidebar-section">
+                        <h3 className="sidebar-heading">Questions</h3>
+                        <div className="question-nav">
+                            {exam.questions.map((_, index) => (
+                                <button
+                                    key={index}
+                                    className={`question-nav-btn ${currentQuestion === index ? 'active' : ''} ${selectedAnswers[index] !== undefined ? 'answered' : ''}`}
+                                    onClick={() => setCurrentQuestion(index)}
+                                    title={`Question ${index + 1}${selectedAnswers[index] !== undefined ? ' (answered)' : ''}`}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="sidebar-section sidebar-progress">
+                        <div className="progress-info">
+                            <span className="progress-label">Answered</span>
+                            <span className="progress-value">{answeredCount} / {exam.questions.length}</span>
+                        </div>
+                        <div className="progress-bar">
+                            <div
+                                className="progress-fill"
+                                style={{ width: `${(answeredCount / exam.questions.length) * 100}%` }}
+                            />
+                        </div>
+                    </div>
+                </aside>
+
+                {/* Main Content */}
+                <main className="exam-content">
+                    <div className="question-card">
+                        <div className="question-header">
+                            <span className="question-number">Question {currentQuestion + 1}</span>
+                            <span className="question-total">of {exam.questions.length}</span>
+                        </div>
+
+                        <div className="question-text">
+                            <p>{question.questionText}</p>
+                        </div>
+
+                        <div className="options-list">
+                            {question.options.map((option, optionIndex) => (
+                                <button
+                                    key={optionIndex}
+                                    className={`option-btn ${selectedAnswers[currentQuestion] === optionIndex ? 'selected' : ''}`}
+                                    onClick={() => handleAnswerSelect(currentQuestion, optionIndex)}
+                                >
+                                    <span className="option-letter">
+                                        {String.fromCharCode(65 + optionIndex)}
+                                    </span>
+                                    <span className="option-text">{option}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="exam-navigation">
+                            <button
+                                className="nav-btn prev-btn"
+                                disabled={currentQuestion === 0}
+                                onClick={() => setCurrentQuestion(currentQuestion - 1)}
+                            >
+                                ← Previous
+                            </button>
+
+                            {currentQuestion === exam.questions.length - 1 ? (
+                                <button className="nav-btn submit-btn" onClick={handleSubmit}>
+                                    ✓ Submit Exam
+                                </button>
+                            ) : (
+                                <button
+                                    className="nav-btn next-btn"
+                                    onClick={() => setCurrentQuestion(currentQuestion + 1)}
+                                >
+                                    Next →
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </main>
             </div>
 
-            <main className="exam-content">
-                <div className="question-card">
-                    <div className="question-header">
-                        <span className="question-number">Question {currentQuestion + 1} of {exam.questions.length}</span>
-                    </div>
-
-                    <div className="question-text">
-                        <p>{question.questionText}</p>
-                    </div>
-
-                    <div className="options-list">
-                        {question.options.map((option, optionIndex) => (
-                            <button
-                                key={optionIndex}
-                                className={`option-btn ${selectedAnswers[currentQuestion] === optionIndex ? 'selected' : ''}`}
-                                onClick={() => handleAnswerSelect(currentQuestion, optionIndex)}
-                            >
-                                <span className="option-letter">
-                                    {String.fromCharCode(65 + optionIndex)}
-                                </span>
-                                <span className="option-text">{option}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="exam-navigation">
-                    <button
-                        className="nav-btn prev-btn"
-                        disabled={currentQuestion === 0}
-                        onClick={() => setCurrentQuestion(currentQuestion - 1)}
-                    >
-                        ← Previous
-                    </button>
-
-                    {currentQuestion === exam.questions.length - 1 ? (
-                        <button className="nav-btn submit-btn" onClick={handleSubmit}>
-                            Submit Exam
-                        </button>
-                    ) : (
-                        <button
-                            className="nav-btn next-btn"
-                            onClick={() => setCurrentQuestion(currentQuestion + 1)}
-                        >
-                            Next →
-                        </button>
-                    )}
-                </div>
-            </main>
-
-            {/* Camera Preview */}
+            {/* Camera Preview — enlarged with live indicator */}
             {cameraStream && (
                 <div className="camera-preview">
                     <video
@@ -452,7 +485,10 @@ function ExamPage() {
                         playsInline
                         muted
                     />
-                    <span className="camera-label">📷 Live</span>
+                    <div className="camera-label">
+                        <span className="live-dot" />
+                        <span>LIVE</span>
+                    </div>
                 </div>
             )}
         </div>
