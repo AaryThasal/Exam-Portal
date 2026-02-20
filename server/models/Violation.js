@@ -25,7 +25,7 @@ const violationSchema = new mongoose.Schema({
     },
     violationType: {
         type: String,
-        enum: ['fullscreen_exit', 'tab_switch', 'camera_off'],
+        enum: ['fullscreen_exit', 'tab_switch', 'camera_off', 'idle_event'],
         default: 'fullscreen_exit'
     }
 }, {

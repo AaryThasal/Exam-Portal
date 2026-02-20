@@ -8,6 +8,7 @@ import {
     isFullscreen
 } from '../utils/fullscreen';
 import { requestCamera, stopCamera, monitorCamera } from '../utils/camera';
+import { monitorIdle } from '../utils/idle';
 import '../styles/ExamPage.css';
 
 function ExamPage() {
@@ -26,7 +27,10 @@ function ExamPage() {
     const [cameraStream, setCameraStream] = useState(null);
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [isBlurred, setIsBlurred] = useState(false);
+    const [idleEvents, setIdleEvents] = useState(0);
+    const [showIdleWarning, setShowIdleWarning] = useState(false);
     const violationsLogged = useRef(new Set());
+    const idleEventsLogged = useRef(new Set());
     const videoRef = useRef(null);
     const examStartTime = useRef(null);
 
@@ -155,6 +159,75 @@ function ExamPage() {
         return cleanup;
     }, [examStarted, examSubmitted, exam, user, cameraStream]);
 
+    // Disable text selection, copying, right-click during active exam
+    useEffect(() => {
+        if (!examStarted || examSubmitted) return;
+
+        const blockCopy = (e) => e.preventDefault();
+        const blockContextMenu = (e) => e.preventDefault();
+        const blockKeyCombo = (e) => {
+            // Block Ctrl+C, Ctrl+A, Ctrl+X, Ctrl+U, Ctrl+S, Ctrl+P
+            if ((e.ctrlKey || e.metaKey) && ['c', 'a', 'x', 'u', 's', 'p'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+            }
+            // Block PrintScreen
+            if (e.key === 'PrintScreen') {
+                e.preventDefault();
+            }
+        };
+        const blockDragStart = (e) => e.preventDefault();
+
+        document.addEventListener('copy', blockCopy);
+        document.addEventListener('cut', blockCopy);
+        document.addEventListener('contextmenu', blockContextMenu);
+        document.addEventListener('keydown', blockKeyCombo);
+        document.addEventListener('dragstart', blockDragStart);
+        document.addEventListener('selectstart', blockCopy);
+
+        return () => {
+            document.removeEventListener('copy', blockCopy);
+            document.removeEventListener('cut', blockCopy);
+            document.removeEventListener('contextmenu', blockContextMenu);
+            document.removeEventListener('keydown', blockKeyCombo);
+            document.removeEventListener('dragstart', blockDragStart);
+            document.removeEventListener('selectstart', blockCopy);
+        };
+    }, [examStarted, examSubmitted]);
+
+    // Idle activity monitoring
+    useEffect(() => {
+        if (!examStarted || examSubmitted || !exam || !user) return;
+
+        const cleanup = monitorIdle(
+            async (count) => {
+                setIdleEvents(count);
+                setShowIdleWarning(true);
+
+                const key = `idle_${count}`;
+                if (!idleEventsLogged.current.has(key)) {
+                    idleEventsLogged.current.add(key);
+                    try {
+                        await violationsAPI.log({
+                            examId: exam._id,
+                            examTitle: exam.title,
+                            studentId: user._id,
+                            studentName: user.name,
+                            studentEmail: user.email,
+                            violationType: 'idle_event'
+                        });
+                    } catch (error) {
+                        console.error('Failed to log idle event:', error);
+                    }
+                }
+            },
+            () => {
+                setShowIdleWarning(false);
+            }
+        );
+
+        return cleanup;
+    }, [examStarted, examSubmitted, exam, user]);
+
     // Callback ref to attach camera stream as soon as video element mounts
     const setCameraVideoRef = useCallback((el) => {
         videoRef.current = el;
@@ -246,13 +319,14 @@ function ExamPage() {
                 fullscreenExits: fullscreenViolations,
                 tabSwitches: tabViolations,
                 cameraOffs: cameraViolations,
+                idleEvents: idleEvents,
                 totalViolations: fullscreenViolations + tabViolations + cameraViolations,
                 score: { correct, total: exam.questions.length }
             });
         } catch (error) {
             console.error('Failed to save session:', error);
         }
-    }, [exam, selectedAnswers, cameraStream, user, fullscreenViolations, tabViolations, cameraViolations]);
+    }, [exam, selectedAnswers, cameraStream, user, fullscreenViolations, tabViolations, cameraViolations, idleEvents]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
@@ -475,6 +549,14 @@ function ExamPage() {
                     </div>
                 </main>
             </div>
+
+            {/* Idle Warning Toast */}
+            {showIdleWarning && (
+                <div className="idle-warning-toast">
+                    <span className="idle-warning-icon">💤</span>
+                    <span className="idle-warning-text">No activity detected. Please continue the exam.</span>
+                </div>
+            )}
 
             {/* Camera Preview — enlarged with live indicator */}
             {cameraStream && (

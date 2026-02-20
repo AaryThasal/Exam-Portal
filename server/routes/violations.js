@@ -47,6 +47,9 @@ router.get('/aggregated', async (req, res) => {
                     },
                     cameraOffs: {
                         $sum: { $cond: [{ $eq: ['$violationType', 'camera_off'] }, 1, 0] }
+                    },
+                    idleEvents: {
+                        $sum: { $cond: [{ $eq: ['$violationType', 'idle_event'] }, 1, 0] }
                     }
                 }
             },

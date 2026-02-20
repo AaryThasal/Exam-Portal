@@ -47,6 +47,10 @@ const examSessionSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    idleEvents: {
+        type: Number,
+        default: 0
+    },
     totalViolations: {
         type: Number,
         default: 0
