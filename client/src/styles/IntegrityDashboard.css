@@ -41,6 +41,9 @@
 
 .header-stats {
     color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .header-stats strong {
@@ -238,4 +241,129 @@
 .view-report-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* ===== Exam Type Pill ===== */
+.exam-type-pill {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.exam-type-pill.coding {
+    background: rgba(56, 239, 125, 0.1);
+    color: #38ef7d;
+    border-color: rgba(56, 239, 125, 0.3);
+}
+
+.exam-type-pill.mcq {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* ===== Exam-wise Violations Grid ===== */
+.exams-violations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    padding-top: 24px;
+}
+
+.exam-violations-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.exam-violations-card:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(102, 126, 234, 0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.evc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.evc-date {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.8rem;
+}
+
+.evc-title {
+    color: #ffffff;
+    margin: 0 0 20px 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.evc-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.evc-stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+}
+
+.evc-stat-value {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.evc-stat-label {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.evc-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 12px;
+    text-align: right;
+}
+
+.view-details-link {
+    color: #667eea;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.exam-violations-card:hover .view-details-link {
+    color: #a5b4fc;
+}
+
+/* Student email in table */
+.student-name small {
+    display: block;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 400;
+    font-size: 0.8rem;
+    margin-top: 2px;
 }

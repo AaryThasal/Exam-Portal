@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { sessionsAPI } from '../services/api';
+import { examsAPI, sessionsAPI } from '../services/api';
 import '../styles/IntegrityDashboard.css';
 
 function IntegrityDashboard() {
     const navigate = useNavigate();
+    const [exams, setExams] = useState([]);
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filterExam, setFilterExam] = useState('');
+    const [selectedExam, setSelectedExam] = useState(null);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -20,27 +21,35 @@ function IntegrityDashboard() {
             navigate('/');
             return;
         }
-        fetchSessions();
+        fetchData();
     }, [navigate]);
 
-    const fetchSessions = async () => {
+    const fetchData = async () => {
         try {
-            const data = await sessionsAPI.getAll();
-            setSessions(data);
+            const [examsData, sessionsData] = await Promise.all([
+                examsAPI.getAll(),
+                sessionsAPI.getAll()
+            ]);
+            setExams(examsData);
+            setSessions(sessionsData);
         } catch (error) {
-            console.error('Failed to fetch sessions:', error);
+            console.error('Failed to fetch data:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const getFilteredData = () => {
-        if (!filterExam) return sessions;
-        return sessions.filter(item => item.examTitle === filterExam);
+    const getExamStats = (examId) => {
+        const examSessions = sessions.filter(s => s.examId === examId);
+        const totalViolations = examSessions.reduce((sum, s) => sum + (s.totalViolations || 0), 0);
+        return {
+            studentsAttempted: examSessions.length,
+            totalViolations
+        };
     };
 
-    const getUniqueExams = () => {
-        return [...new Set(sessions.map(item => item.examTitle))];
+    const getExamSessions = (examId) => {
+        return sessions.filter(s => s.examId === examId);
     };
 
     const formatDate = (dateStr) => {
@@ -53,13 +62,119 @@ function IntegrityDashboard() {
     if (loading) {
         return (
             <div className="integrity-page">
-                <div className="loading-spinner">Loading sessions...</div>
+                <div className="loading-spinner">Loading...</div>
             </div>
         );
     }
 
-    const filteredData = getFilteredData();
+    // Exam-level sessions view (when an exam is selected)
+    if (selectedExam) {
+        const examSessions = getExamSessions(selectedExam._id);
+        return (
+            <div className="integrity-page">
+                <header className="integrity-header">
+                    <div className="header-left">
+                        <button className="back-btn" onClick={() => setSelectedExam(null)}>
+                            ← Back to Exams
+                        </button>
+                        <h1>📋 {selectedExam.title}</h1>
+                    </div>
+                    <div className="header-stats">
+                        <span className="exam-type-pill">{selectedExam.type}</span>
+                        <span>Sessions: <strong>{examSessions.length}</strong></span>
+                    </div>
+                </header>
 
+                <main className="integrity-content">
+                    {examSessions.length === 0 ? (
+                        <div className="no-violations">
+                            <span className="no-violations-icon">📋</span>
+                            <h2>No Sessions</h2>
+                            <p>No students have attempted this exam yet.</p>
+                        </div>
+                    ) : (
+                        <div className="integrity-table-container">
+                            <table className="integrity-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Date</th>
+                                        <th>Duration</th>
+                                        <th>Fullscreen Exits</th>
+                                        <th>Tab Switches</th>
+                                        <th>Camera Off</th>
+                                        <th>Total Violations</th>
+                                        {selectedExam.type === 'MCQ' && <th>Score</th>}
+                                        {selectedExam.type === 'Coding' && <th>Code</th>}
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {examSessions.map((session) => (
+                                        <tr
+                                            key={session._id}
+                                            className="clickable-row"
+                                            onClick={() => navigate(`/admin/session/${session._id}`)}
+                                        >
+                                            <td className="student-name">
+                                                <div>{session.studentName}</div>
+                                                <small className="student-email">{session.studentEmail}</small>
+                                            </td>
+                                            <td>{formatDate(session.startTime)}</td>
+                                            <td>{session.duration} min</td>
+                                            <td className="count-cell">
+                                                <span className={session.fullscreenExits > 0 ? 'has-violations-text' : ''}>
+                                                    {session.fullscreenExits || 0}
+                                                </span>
+                                            </td>
+                                            <td className="count-cell">
+                                                <span className={session.tabSwitches > 0 ? 'has-violations-text' : ''}>
+                                                    {session.tabSwitches || 0}
+                                                </span>
+                                            </td>
+                                            <td className="count-cell">
+                                                <span className={session.cameraOffs > 0 ? 'has-violations-text' : ''}>
+                                                    {session.cameraOffs || 0}
+                                                </span>
+                                            </td>
+                                            <td className="count-cell">
+                                                <span className={session.totalViolations > 0 ? 'has-violations-text' : ''}>
+                                                    {session.totalViolations || 0}
+                                                </span>
+                                            </td>
+                                            {selectedExam.type === 'MCQ' && (
+                                                <td className="count-cell">
+                                                    {session.score?.correct}/{session.score?.total}
+                                                </td>
+                                            )}
+                                            {selectedExam.type === 'Coding' && (
+                                                <td className="count-cell">
+                                                    {session.codeSubmission ? '✅ Submitted' : '—'}
+                                                </td>
+                                            )}
+                                            <td>
+                                                <button
+                                                    className="view-report-btn"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/admin/session/${session._id}`);
+                                                    }}
+                                                >
+                                                    View Report
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </main>
+            </div>
+        );
+    }
+
+    // Exam list view (default)
     return (
         <div className="integrity-page">
             <header className="integrity-header">
@@ -67,84 +182,62 @@ function IntegrityDashboard() {
                     <button className="back-btn" onClick={() => navigate('/admin/dashboard')}>
                         ← Back to Dashboard
                     </button>
-                    <h1>📋 Exam Session Reports</h1>
+                    <h1>📋 Exam-wise Violations & Reports</h1>
                 </div>
                 <div className="header-stats">
+                    <span>Total Exams: <strong>{exams.length}</strong></span>
                     <span>Total Sessions: <strong>{sessions.length}</strong></span>
                 </div>
             </header>
 
-            {/* Exam Filter */}
-            <div className="filter-section">
-                <label>Filter by Exam:</label>
-                <select
-                    value={filterExam}
-                    onChange={(e) => setFilterExam(e.target.value)}
-                    className="filter-select"
-                >
-                    <option value="">All Exams</option>
-                    {getUniqueExams().map(exam => (
-                        <option key={exam} value={exam}>{exam}</option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Sessions Table */}
             <main className="integrity-content">
-                {filteredData.length === 0 ? (
+                {exams.length === 0 ? (
                     <div className="no-violations">
                         <span className="no-violations-icon">📋</span>
-                        <h2>No Sessions Recorded</h2>
-                        <p>No exam sessions have been completed yet.</p>
+                        <h2>No Exams Created</h2>
+                        <p>Create exams first to see violations and reports.</p>
                     </div>
                 ) : (
-                    <div className="integrity-table-container">
-                        <table className="integrity-table">
-                            <thead>
-                                <tr>
-                                    <th>Student</th>
-                                    <th>Exam</th>
-                                    <th>Date</th>
-                                    <th>Duration</th>
-                                    <th>Violations</th>
-                                    <th>Score</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredData.map((session) => (
-                                    <tr
-                                        key={session._id}
-                                        className="clickable-row"
-                                        onClick={() => navigate(`/admin/session/${session._id}`)}
-                                    >
-                                        <td className="student-name">{session.studentName}</td>
-                                        <td className="exam-title">{session.examTitle}</td>
-                                        <td>{formatDate(session.startTime)}</td>
-                                        <td>{session.duration} min</td>
-                                        <td className="count-cell">
-                                            <span className={session.totalViolations > 0 ? 'has-violations-text' : ''}>
-                                                {session.totalViolations}
+                    <div className="exams-violations-grid">
+                        {exams.map((exam) => {
+                            const stats = getExamStats(exam._id);
+                            return (
+                                <div
+                                    key={exam._id}
+                                    className="exam-violations-card"
+                                    onClick={() => setSelectedExam(exam)}
+                                >
+                                    <div className="evc-header">
+                                        <span className={`exam-type-pill ${exam.type === 'Coding' ? 'coding' : 'mcq'}`}>
+                                            {exam.type}
+                                        </span>
+                                        <span className="evc-date">
+                                            {new Date(exam.createdAt).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                    <h3 className="evc-title">{exam.title}</h3>
+                                    <div className="evc-stats">
+                                        <div className="evc-stat">
+                                            <span className="evc-stat-value">{stats.studentsAttempted}</span>
+                                            <span className="evc-stat-label">Students</span>
+                                        </div>
+                                        <div className="evc-stat">
+                                            <span className={`evc-stat-value ${stats.totalViolations > 0 ? 'has-violations-text' : ''}`}>
+                                                {stats.totalViolations}
                                             </span>
-                                        </td>
-                                        <td className="count-cell">
-                                            {session.score?.correct}/{session.score?.total}
-                                        </td>
-                                        <td>
-                                            <button
-                                                className="view-report-btn"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    navigate(`/admin/session/${session._id}`);
-                                                }}
-                                            >
-                                                View Report
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                            <span className="evc-stat-label">Violations</span>
+                                        </div>
+                                        <div className="evc-stat">
+                                            <span className="evc-stat-value">{exam.duration} min</span>
+                                            <span className="evc-stat-label">Duration</span>
+                                        </div>
+                                    </div>
+                                    <div className="evc-footer">
+                                        <span className="view-details-link">View Details →</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </main>

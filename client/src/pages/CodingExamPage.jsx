@@ -8,29 +8,24 @@ import {
     isFullscreen
 } from '../utils/fullscreen';
 import { requestCamera, stopCamera, monitorCamera } from '../utils/camera';
-import { monitorIdle } from '../utils/idle';
-import '../styles/ExamPage.css';
+import '../styles/CodingExamPage.css';
 
-function ExamPage() {
+function CodingExamPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [exam, setExam] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [currentQuestion, setCurrentQuestion] = useState(0);
-    const [selectedAnswers, setSelectedAnswers] = useState({});
     const [examStarted, setExamStarted] = useState(false);
     const [examSubmitted, setExamSubmitted] = useState(false);
+    const [code, setCode] = useState('');
     const [fullscreenViolations, setFullscreenViolations] = useState(0);
     const [tabViolations, setTabViolations] = useState(0);
     const [cameraViolations, setCameraViolations] = useState(0);
     const [cameraStream, setCameraStream] = useState(null);
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [isBlurred, setIsBlurred] = useState(false);
-    const [idleEvents, setIdleEvents] = useState(0);
-    const [showIdleWarning, setShowIdleWarning] = useState(false);
     const violationsLogged = useRef(new Set());
-    const idleEventsLogged = useRef(new Set());
     const videoRef = useRef(null);
     const examStartTime = useRef(null);
 
@@ -159,19 +154,39 @@ function ExamPage() {
         return cleanup;
     }, [examStarted, examSubmitted, exam, user, cameraStream]);
 
-    // Disable text selection, copying, right-click during active exam
+    // Disable copying of problem description, right-click, but allow typing in code editor
     useEffect(() => {
         if (!examStarted || examSubmitted) return;
 
-        const blockCopy = (e) => e.preventDefault();
         const blockContextMenu = (e) => e.preventDefault();
         const blockKeyCombo = (e) => {
-            // Block Ctrl+C, Ctrl+A, Ctrl+X, Ctrl+U, Ctrl+S, Ctrl+P
+            // Allow normal typing in code editor
+            const isCodeEditor = e.target.classList.contains('code-editor-textarea');
+            if (isCodeEditor) {
+                // Only block Ctrl+A (select all) on the whole page - allow copy/paste within editor
+                // Block Ctrl+S, Ctrl+P
+                if ((e.ctrlKey || e.metaKey) && ['s', 'p'].includes(e.key.toLowerCase())) {
+                    e.preventDefault();
+                }
+                return;
+            }
+            // Block Ctrl+C, Ctrl+A, Ctrl+X, Ctrl+U, Ctrl+S, Ctrl+P on non-editor elements
             if ((e.ctrlKey || e.metaKey) && ['c', 'a', 'x', 'u', 's', 'p'].includes(e.key.toLowerCase())) {
                 e.preventDefault();
             }
-            // Block PrintScreen
             if (e.key === 'PrintScreen') {
+                e.preventDefault();
+            }
+        };
+        const blockCopy = (e) => {
+            // Allow copy only inside the code editor
+            if (!e.target.classList.contains('code-editor-textarea')) {
+                e.preventDefault();
+            }
+        };
+        const blockSelect = (e) => {
+            // Allow text selection only inside code editor
+            if (!e.target.classList.contains('code-editor-textarea')) {
                 e.preventDefault();
             }
         };
@@ -182,7 +197,7 @@ function ExamPage() {
         document.addEventListener('contextmenu', blockContextMenu);
         document.addEventListener('keydown', blockKeyCombo);
         document.addEventListener('dragstart', blockDragStart);
-        document.addEventListener('selectstart', blockCopy);
+        document.addEventListener('selectstart', blockSelect);
 
         return () => {
             document.removeEventListener('copy', blockCopy);
@@ -190,45 +205,11 @@ function ExamPage() {
             document.removeEventListener('contextmenu', blockContextMenu);
             document.removeEventListener('keydown', blockKeyCombo);
             document.removeEventListener('dragstart', blockDragStart);
-            document.removeEventListener('selectstart', blockCopy);
+            document.removeEventListener('selectstart', blockSelect);
         };
     }, [examStarted, examSubmitted]);
 
-    // Idle activity monitoring
-    useEffect(() => {
-        if (!examStarted || examSubmitted || !exam || !user) return;
-
-        const cleanup = monitorIdle(
-            async (count) => {
-                setIdleEvents(count);
-                setShowIdleWarning(true);
-
-                const key = `idle_${count}`;
-                if (!idleEventsLogged.current.has(key)) {
-                    idleEventsLogged.current.add(key);
-                    try {
-                        await violationsAPI.log({
-                            examId: exam._id,
-                            examTitle: exam.title,
-                            studentId: user._id,
-                            studentName: user.name,
-                            studentEmail: user.email,
-                            violationType: 'idle_event'
-                        });
-                    } catch (error) {
-                        console.error('Failed to log idle event:', error);
-                    }
-                }
-            },
-            () => {
-                setShowIdleWarning(false);
-            }
-        );
-
-        return cleanup;
-    }, [examStarted, examSubmitted, exam, user]);
-
-    // Callback ref to attach camera stream as soon as video element mounts
+    // Callback ref to attach camera stream
     const setCameraVideoRef = useCallback((el) => {
         videoRef.current = el;
         if (el && cameraStream) {
@@ -236,7 +217,7 @@ function ExamPage() {
         }
     }, [cameraStream]);
 
-    // Stop camera on exam submit
+    // Stop camera on unmount
     useEffect(() => {
         return () => {
             if (cameraStream) {
@@ -248,8 +229,8 @@ function ExamPage() {
     const fetchExam = async () => {
         try {
             const data = await examsAPI.getById(id);
-            if (data.type === 'Coding') {
-                navigate(`/coding-exam/${id}`, { replace: true });
+            if (data.type !== 'Coding') {
+                navigate(`/exam/${id}`);
                 return;
             }
             setExam(data);
@@ -264,7 +245,6 @@ function ExamPage() {
     };
 
     const handleStartExam = async () => {
-        // Request camera first
         const stream = await requestCamera();
         if (!stream) {
             alert('Camera access is required to start the exam.');
@@ -272,7 +252,6 @@ function ExamPage() {
         }
         setCameraStream(stream);
 
-        // Then enter fullscreen
         const success = await enterFullscreen();
         if (success || isFullscreen()) {
             examStartTime.current = new Date();
@@ -284,27 +263,13 @@ function ExamPage() {
         }
     };
 
-    const handleAnswerSelect = (questionIndex, optionIndex) => {
-        setSelectedAnswers({
-            ...selectedAnswers,
-            [questionIndex]: optionIndex
-        });
-    };
-
     const handleSubmit = useCallback(async () => {
         setExamSubmitted(true);
         if (cameraStream) {
             stopCamera(cameraStream);
             setCameraStream(null);
         }
-        let correct = 0;
-        exam.questions.forEach((q, index) => {
-            if (selectedAnswers[index] === q.correctAnswer) {
-                correct++;
-            }
-        });
 
-        // Save exam session
         const endTime = new Date();
         const startTime = examStartTime.current || endTime;
         const durationMs = endTime - startTime;
@@ -323,15 +288,16 @@ function ExamPage() {
                 fullscreenExits: fullscreenViolations,
                 tabSwitches: tabViolations,
                 cameraOffs: cameraViolations,
-                idleEvents: idleEvents,
+                idleEvents: 0,
                 totalViolations: fullscreenViolations + tabViolations + cameraViolations,
-                score: { correct, total: exam.questions.length },
-                examType: 'MCQ'
+                score: { correct: 0, total: 0 },
+                examType: 'Coding',
+                codeSubmission: code
             });
         } catch (error) {
             console.error('Failed to save session:', error);
         }
-    }, [exam, selectedAnswers, cameraStream, user, fullscreenViolations, tabViolations, cameraViolations, idleEvents]);
+    }, [exam, code, cameraStream, user, fullscreenViolations, tabViolations, cameraViolations]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
@@ -343,7 +309,7 @@ function ExamPage() {
 
     if (loading) {
         return (
-            <div className="exam-page">
+            <div className="coding-exam-page">
                 <div className="loading-spinner">Loading exam...</div>
             </div>
         );
@@ -352,22 +318,18 @@ function ExamPage() {
     // Pre-exam screen
     if (!examStarted) {
         return (
-            <div className="exam-page pre-exam">
+            <div className="coding-exam-page pre-exam">
                 <div className="pre-exam-container">
                     <div className="exam-info-card">
-                        <h1>{exam.title}</h1>
+                        <h1>{exam?.title}</h1>
                         <div className="exam-details">
                             <div className="detail-item">
-                                <span className="detail-icon">📝</span>
-                                <span>{exam.questions?.length || 0} Questions</span>
+                                <span className="detail-icon">💻</span>
+                                <span>Coding Exam</span>
                             </div>
                             <div className="detail-item">
                                 <span className="detail-icon">⏱️</span>
-                                <span>{exam.duration} Minutes</span>
-                            </div>
-                            <div className="detail-item">
-                                <span className="detail-icon">📋</span>
-                                <span>{exam.type}</span>
+                                <span>{exam?.duration} Minutes</span>
                             </div>
                         </div>
 
@@ -378,12 +340,13 @@ function ExamPage() {
                                 <li>Exiting fullscreen will be recorded as a violation</li>
                                 <li><strong>Switching browser tabs is prohibited</strong></li>
                                 <li>Your <strong>camera must remain on</strong> throughout the exam</li>
-                                <li>Multiple violations may invalidate your exam</li>
+                                <li>Write your solution in the code editor</li>
+                                <li>Problem description text cannot be copied</li>
                             </ul>
                         </div>
 
                         <button className="start-exam-btn" onClick={handleStartExam}>
-                            🚀 Start Exam in Fullscreen
+                            🚀 Start Coding Exam
                         </button>
 
                         <button className="back-btn" onClick={() => navigate('/student/dashboard')}>
@@ -397,30 +360,21 @@ function ExamPage() {
 
     // Post-exam screen
     if (examSubmitted) {
-        const totalQuestions = exam.questions.length;
-        const answered = Object.keys(selectedAnswers).length;
-        let correct = 0;
-        exam.questions.forEach((q, index) => {
-            if (selectedAnswers[index] === q.correctAnswer) {
-                correct++;
-            }
-        });
-
         return (
-            <div className="exam-page exam-completed">
+            <div className="coding-exam-page exam-completed">
                 <div className="completion-container">
                     <div className="completion-card">
                         <div className="completion-icon">✅</div>
-                        <h1>Exam Completed!</h1>
+                        <h1>Coding Exam Completed!</h1>
 
                         <div className="results-summary">
                             <div className="result-item">
-                                <span className="result-label">Questions Answered</span>
-                                <span className="result-value">{answered}/{totalQuestions}</span>
+                                <span className="result-label">Code Submitted</span>
+                                <span className="result-value">{code.length > 0 ? 'Yes' : 'No'}</span>
                             </div>
                             <div className="result-item">
-                                <span className="result-label">Correct Answers</span>
-                                <span className="result-value correct">{correct}/{totalQuestions}</span>
+                                <span className="result-label">Lines of Code</span>
+                                <span className="result-value">{code.split('\n').filter(l => l.trim()).length}</span>
                             </div>
                             <div className="result-item">
                                 <span className="result-label">Violations</span>
@@ -440,16 +394,13 @@ function ExamPage() {
     }
 
     // Active exam screen
-    const question = exam.questions[currentQuestion];
-    const answeredCount = Object.keys(selectedAnswers).length;
-
     return (
-        <div className={`exam-page exam-active ${isBlurred ? 'blurred' : ''}`}>
+        <div className={`coding-exam-page coding-active ${isBlurred ? 'blurred' : ''}`}>
             {/* Top Header Bar */}
             <header className="exam-header">
                 <div className="exam-header-left">
                     <div className="exam-title">
-                        <span className="exam-title-icon">📝</span>
+                        <span className="exam-title-icon">💻</span>
                         <h1>{exam.title}</h1>
                     </div>
                 </div>
@@ -469,101 +420,44 @@ function ExamPage() {
                 </div>
             </header>
 
-            {/* Main Body — Sidebar + Content */}
-            <div className="exam-body">
-                {/* Sidebar: question nav + progress */}
-                <aside className="exam-sidebar">
-                    <div className="sidebar-section">
-                        <h3 className="sidebar-heading">Questions</h3>
-                        <div className="question-nav">
-                            {exam.questions.map((_, index) => (
-                                <button
-                                    key={index}
-                                    className={`question-nav-btn ${currentQuestion === index ? 'active' : ''} ${selectedAnswers[index] !== undefined ? 'answered' : ''}`}
-                                    onClick={() => setCurrentQuestion(index)}
-                                    title={`Question ${index + 1}${selectedAnswers[index] !== undefined ? ' (answered)' : ''}`}
-                                >
-                                    {index + 1}
-                                </button>
-                            ))}
-                        </div>
+            {/* Main Body */}
+            <div className="coding-body">
+                {/* Problem Description Panel */}
+                <div className="problem-panel">
+                    <div className="panel-header">
+                        <h2>📋 Problem Description</h2>
                     </div>
-                    <div className="sidebar-section sidebar-progress">
-                        <div className="progress-info">
-                            <span className="progress-label">Answered</span>
-                            <span className="progress-value">{answeredCount} / {exam.questions.length}</span>
-                        </div>
-                        <div className="progress-bar">
-                            <div
-                                className="progress-fill"
-                                style={{ width: `${(answeredCount / exam.questions.length) * 100}%` }}
-                            />
-                        </div>
+                    <div className="problem-content no-select">
+                        <pre className="problem-text">{exam.problemDescription}</pre>
                     </div>
-                </aside>
+                </div>
 
-                {/* Main Content */}
-                <main className="exam-content">
-                    <div className="question-card">
-                        <div className="question-header">
-                            <span className="question-number">Question {currentQuestion + 1}</span>
-                            <span className="question-total">of {exam.questions.length}</span>
-                        </div>
-
-                        <div className="question-text">
-                            <p>{question.questionText}</p>
-                        </div>
-
-                        <div className="options-list">
-                            {question.options.map((option, optionIndex) => (
-                                <button
-                                    key={optionIndex}
-                                    className={`option-btn ${selectedAnswers[currentQuestion] === optionIndex ? 'selected' : ''}`}
-                                    onClick={() => handleAnswerSelect(currentQuestion, optionIndex)}
-                                >
-                                    <span className="option-letter">
-                                        {String.fromCharCode(65 + optionIndex)}
-                                    </span>
-                                    <span className="option-text">{option}</span>
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="exam-navigation">
-                            <button
-                                className="nav-btn prev-btn"
-                                disabled={currentQuestion === 0}
-                                onClick={() => setCurrentQuestion(currentQuestion - 1)}
-                            >
-                                ← Previous
-                            </button>
-
-                            {currentQuestion === exam.questions.length - 1 ? (
-                                <button className="nav-btn submit-btn" onClick={handleSubmit}>
-                                    ✓ Submit Exam
-                                </button>
-                            ) : (
-                                <button
-                                    className="nav-btn next-btn"
-                                    onClick={() => setCurrentQuestion(currentQuestion + 1)}
-                                >
-                                    Next →
-                                </button>
-                            )}
-                        </div>
+                {/* Code Editor Panel */}
+                <div className="editor-panel">
+                    <div className="panel-header">
+                        <h2>✏️ Code Editor</h2>
+                        <span className="line-count">{code.split('\n').length} line{code.split('\n').length !== 1 ? 's' : ''}</span>
                     </div>
-                </main>
+                    <div className="editor-wrapper">
+                        <textarea
+                            className="code-editor-textarea"
+                            value={code}
+                            onChange={(e) => setCode(e.target.value)}
+                            placeholder="Write your code here..."
+                            spellCheck={false}
+                            autoCapitalize="off"
+                            autoCorrect="off"
+                        />
+                    </div>
+                    <div className="editor-footer">
+                        <button className="submit-code-btn" onClick={handleSubmit}>
+                            ✓ Submit Code
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            {/* Idle Warning Toast */}
-            {showIdleWarning && (
-                <div className="idle-warning-toast">
-                    <span className="idle-warning-icon">💤</span>
-                    <span className="idle-warning-text">No activity detected. Please continue the exam.</span>
-                </div>
-            )}
-
-            {/* Camera Preview — enlarged with live indicator */}
+            {/* Camera Preview */}
             {cameraStream && (
                 <div className="camera-preview">
                     <video
@@ -582,4 +476,4 @@ function ExamPage() {
     );
 }
 
-export default ExamPage;
+export default CodingExamPage;

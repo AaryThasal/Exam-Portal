@@ -1,0 +1,520 @@
+/* Coding Exam Page Styles */
+.coding-exam-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+/* Reuse pre-exam styles from ExamPage */
+.coding-exam-page.pre-exam {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.coding-exam-page .pre-exam-container {
+    width: 100%;
+    max-width: 500px;
+}
+
+.coding-exam-page .exam-info-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.coding-exam-page .exam-info-card h1 {
+    color: #ffffff;
+    margin: 0 0 24px 0;
+    font-size: 1.8rem;
+}
+
+.coding-exam-page .exam-details {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.coding-exam-page .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+}
+
+.coding-exam-page .fullscreen-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.coding-exam-page .fullscreen-warning h3 {
+    color: #f59e0b;
+    margin: 0 0 16px 0;
+    font-size: 1rem;
+}
+
+.coding-exam-page .fullscreen-warning ul {
+    margin: 0;
+    padding-left: 20px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    line-height: 1.8;
+}
+
+.coding-exam-page .start-exam-btn {
+    width: 100%;
+    padding: 18px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 16px;
+}
+
+.coding-exam-page .start-exam-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 30px rgba(17, 153, 142, 0.5);
+}
+
+.coding-exam-page .back-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.coding-exam-page .back-btn:hover {
+    color: #ffffff;
+}
+
+/* Exam Completed */
+.coding-exam-page.exam-completed {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.coding-exam-page .completion-container {
+    width: 100%;
+    max-width: 450px;
+}
+
+.coding-exam-page .completion-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 40px;
+    text-align: center;
+}
+
+.coding-exam-page .completion-icon {
+    font-size: 72px;
+    margin-bottom: 20px;
+}
+
+.coding-exam-page .completion-card h1 {
+    color: #ffffff;
+    margin: 0 0 30px 0;
+    font-size: 1.8rem;
+}
+
+.coding-exam-page .results-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.coding-exam-page .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+.coding-exam-page .result-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+}
+
+.coding-exam-page .result-value {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.coding-exam-page .result-value.violations {
+    color: #ef4444;
+}
+
+.coding-exam-page .completion-card .back-btn {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.coding-exam-page .completion-card .back-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+/* ===== Active Coding Exam ===== */
+.coding-active {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    transition: filter 0.3s ease;
+}
+
+.coding-active.blurred .coding-body {
+    filter: blur(10px);
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Reuse exam header styles from ExamPage.css */
+.coding-exam-page .exam-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 32px;
+    height: 64px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+    z-index: 50;
+}
+
+.coding-exam-page .exam-header-left,
+.coding-exam-page .exam-header-center,
+.coding-exam-page .exam-header-right {
+    display: flex;
+    align-items: center;
+}
+
+.coding-exam-page .exam-header-left {
+    flex: 1;
+    justify-content: flex-start;
+}
+
+.coding-exam-page .exam-header-center {
+    flex: 0 0 auto;
+}
+
+.coding-exam-page .exam-header-right {
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.coding-exam-page .exam-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.coding-exam-page .exam-title-icon {
+    font-size: 1.15rem;
+}
+
+.coding-exam-page .exam-title h1 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.coding-exam-page .exam-timer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 8px 22px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.coding-exam-page .timer-icon {
+    font-size: 1.05rem;
+}
+
+.coding-exam-page .timer-value {
+    color: #38ef7d;
+    font-size: 1.35rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1.5px;
+}
+
+.coding-exam-page .timer-label {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.coding-exam-page .exam-timer.timer-warn .timer-value {
+    color: #f59e0b;
+}
+
+.coding-exam-page .exam-timer.timer-critical .timer-value {
+    color: #ef4444;
+    animation: blink 1s infinite;
+}
+
+.coding-exam-page .violations-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.3s ease;
+}
+
+.coding-exam-page .violations-icon {
+    font-size: 1rem;
+}
+
+.coding-exam-page .violations-count {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.coding-exam-page .violations-label {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.8rem;
+}
+
+.coding-exam-page .violations-badge.has-violations {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.coding-exam-page .violations-badge.has-violations .violations-count {
+    color: #ef4444;
+}
+
+.coding-exam-page .violations-badge.has-violations .violations-label {
+    color: rgba(239, 68, 68, 0.7);
+}
+
+/* ===== Coding Body — Split Panels ===== */
+.coding-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel-header h2 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Problem Panel (Left) */
+.problem-panel {
+    width: 40%;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    border-right: 2px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.problem-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.problem-content.no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.problem-text {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    margin: 0;
+}
+
+/* Editor Panel (Right) */
+.editor-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.line-count {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.8rem;
+}
+
+.editor-wrapper {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.code-editor-textarea {
+    width: 100%;
+    height: 100%;
+    resize: none;
+    background: rgba(13, 17, 23, 0.95);
+    color: #e6edf3;
+    border: none;
+    padding: 20px 24px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    tab-size: 4;
+    outline: none;
+    overflow-y: auto;
+}
+
+.code-editor-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.code-editor-textarea:focus {
+    background: rgba(13, 17, 23, 1);
+}
+
+.editor-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 24px;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.submit-code-btn {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.submit-code-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(17, 153, 142, 0.45);
+}
+
+/* Camera Preview */
+.coding-exam-page .camera-preview {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 200px;
+    height: 150px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid rgba(56, 239, 125, 0.35);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.55);
+    z-index: 100;
+    background: #000;
+}
+
+.coding-exam-page .camera-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: scaleX(-1);
+}
+
+.coding-exam-page .camera-label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.65rem;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.65);
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.coding-exam-page .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ef4444;
+    display: inline-block;
+    animation: pulse-dot 1.4s infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .coding-body {
+        flex-direction: column;
+    }
+
+    .problem-panel {
+        width: 100%;
+        min-width: unset;
+        max-height: 40vh;
+        border-right: none;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+    }
+}

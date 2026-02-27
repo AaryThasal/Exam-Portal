@@ -119,7 +119,7 @@ function AdminDashboard() {
                                     </div>
                                     <h4>{exam.title}</h4>
                                     <p className="exam-questions">
-                                        {exam.questions?.length || 0} Questions
+                                        {exam.type === 'Coding' ? 'Coding Problem' : `${exam.questions?.length || 0} Questions`}
                                     </p>
                                     <p className="exam-created">
                                         Created: {new Date(exam.createdAt).toLocaleDateString()}

@@ -90,8 +90,10 @@ function SessionReport() {
                         <div>
                             <span className="info-label">Exam</span>
                             <span className="info-value">{session.examTitle}</span>
+                            <span className="info-sub">{session.examType || 'MCQ'}</span>
                         </div>
                     </div>
+                    {session.examType !== 'Coding' && (
                     <div className="info-card">
                         <span className="info-icon">🏆</span>
                         <div>
@@ -99,6 +101,7 @@ function SessionReport() {
                             <span className="info-value">{session.score?.correct}/{session.score?.total}</span>
                         </div>
                     </div>
+                    )}
                 </div>
 
                 {/* Timing */}
@@ -149,6 +152,20 @@ function SessionReport() {
                         </div>
                     </div>
                 </div>
+
+                {/* Code Submission (Coding exams only) */}
+                {session.examType === 'Coding' && (
+                    <div className="report-section">
+                        <h2>💻 Code Submission</h2>
+                        {session.codeSubmission ? (
+                            <div className="code-submission-block">
+                                <pre className="code-display">{session.codeSubmission}</pre>
+                            </div>
+                        ) : (
+                            <p className="no-code-text">No code was submitted.</p>
+                        )}
+                    </div>
+                )}
             </main>
         </div>
     );

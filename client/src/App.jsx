@@ -7,6 +7,7 @@ import IntegrityDashboard from './pages/IntegrityDashboard';
 import StudentLogin from './pages/StudentLogin';
 import StudentDashboard from './pages/StudentDashboard';
 import ExamPage from './pages/ExamPage';
+import CodingExamPage from './pages/CodingExamPage';
 import SessionReport from './pages/SessionReport';
 import './App.css';
 
@@ -28,8 +29,9 @@ function App() {
         <Route path="/student/login" element={<StudentLogin />} />
         <Route path="/student/dashboard" element={<StudentDashboard />} />
 
-        {/* Exam Route */}
+        {/* Exam Routes */}
         <Route path="/exam/:id" element={<ExamPage />} />
+        <Route path="/coding-exam/:id" element={<CodingExamPage />} />
       </Routes>
     </Router>
   );

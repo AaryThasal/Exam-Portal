@@ -58,6 +58,15 @@ const examSessionSchema = new mongoose.Schema({
     score: {
         correct: { type: Number, default: 0 },
         total: { type: Number, default: 0 }
+    },
+    examType: {
+        type: String,
+        enum: ['MCQ', 'Coding'],
+        default: 'MCQ'
+    },
+    codeSubmission: {
+        type: String,
+        default: ''
     }
 }, {
     timestamps: true

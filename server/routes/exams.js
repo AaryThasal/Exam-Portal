@@ -36,7 +36,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/exams - Create new exam
 router.post('/', async (req, res) => {
     try {
-        const { title, type, createdBy, questions, duration } = req.body;
+        const { title, type, createdBy, questions, duration, problemDescription } = req.body;
 
         // Verify admin exists
         const admin = await User.findById(createdBy);
@@ -48,7 +48,8 @@ router.post('/', async (req, res) => {
             title,
             type: type || 'MCQ',
             createdBy,
-            questions: questions || [],
+            questions: type === 'Coding' ? [] : (questions || []),
+            problemDescription: type === 'Coding' ? (problemDescription || '') : '',
             duration: duration || 30
         });
 

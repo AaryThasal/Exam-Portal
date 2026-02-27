@@ -66,4 +66,36 @@ router.get('/aggregated', async (req, res) => {
     }
 });
 
+// GET /api/violations/exam/:examId - Get violations for a specific exam
+router.get('/exam/:examId', async (req, res) => {
+    try {
+        const aggregated = await Violation.aggregate([
+            { $match: { examId: new (require('mongoose').Types.ObjectId)(req.params.examId) } },
+            {
+                $group: {
+                    _id: { studentId: '$studentId' },
+                    studentName: { $first: '$studentName' },
+                    studentEmail: { $first: '$studentEmail' },
+                    examTitle: { $first: '$examTitle' },
+                    fullscreenExits: {
+                        $sum: { $cond: [{ $eq: ['$violationType', 'fullscreen_exit'] }, 1, 0] }
+                    },
+                    tabSwitches: {
+                        $sum: { $cond: [{ $eq: ['$violationType', 'tab_switch'] }, 1, 0] }
+                    },
+                    cameraOffs: {
+                        $sum: { $cond: [{ $eq: ['$violationType', 'camera_off'] }, 1, 0] }
+                    },
+                    totalViolations: { $sum: 1 }
+                }
+            },
+            { $sort: { totalViolations: -1 } }
+        ]);
+        res.json(aggregated);
+    } catch (error) {
+        console.error('Get exam violations error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 module.exports = router;

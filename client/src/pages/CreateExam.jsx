@@ -11,6 +11,7 @@ function CreateExam() {
         title: '',
         type: 'MCQ',
         duration: 30,
+        problemDescription: '',
         questions: [
             {
                 questionText: '',
@@ -82,16 +83,23 @@ function CreateExam() {
             return;
         }
 
-        for (let i = 0; i < examData.questions.length; i++) {
-            const q = examData.questions[i];
-            if (!q.questionText.trim()) {
-                alert(`Please enter question text for Question ${i + 1}`);
+        if (examData.type === 'Coding') {
+            if (!examData.problemDescription.trim()) {
+                alert('Please enter a problem description for the coding exam');
                 return;
             }
-            for (let j = 0; j < q.options.length; j++) {
-                if (!q.options[j].trim()) {
-                    alert(`Please enter Option ${j + 1} for Question ${i + 1}`);
+        } else {
+            for (let i = 0; i < examData.questions.length; i++) {
+                const q = examData.questions[i];
+                if (!q.questionText.trim()) {
+                    alert(`Please enter question text for Question ${i + 1}`);
                     return;
+                }
+                for (let j = 0; j < q.options.length; j++) {
+                    if (!q.options[j].trim()) {
+                        alert(`Please enter Option ${j + 1} for Question ${i + 1}`);
+                        return;
+                    }
                 }
             }
         }
@@ -170,7 +178,26 @@ function CreateExam() {
                         </div>
                     </section>
 
-                    {/* Questions */}
+                    {/* Coding Problem Description */}
+                    {examData.type === 'Coding' && (
+                        <section className="form-section">
+                            <h2>Problem Description</h2>
+                            <div className="form-group">
+                                <label htmlFor="problemDescription">Describe the coding problem *</label>
+                                <textarea
+                                    id="problemDescription"
+                                    value={examData.problemDescription}
+                                    onChange={(e) => handleExamChange('problemDescription', e.target.value)}
+                                    placeholder="Enter the coding problem description, requirements, constraints, examples..."
+                                    rows="8"
+                                    required
+                                />
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Questions (MCQ only) */}
+                    {examData.type === 'MCQ' && (
                     <section className="form-section questions-section">
                         <div className="section-header">
                             <h2>Questions ({examData.questions.length})</h2>
@@ -229,6 +256,7 @@ function CreateExam() {
                             </div>
                         ))}
                     </section>
+                    )}
 
                     {/* Submit */}
                     <div className="form-actions">

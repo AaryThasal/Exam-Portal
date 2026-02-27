@@ -237,3 +237,29 @@
         padding: 16px 20px;
     }
 }
+
+/* ===== Code Submission Block ===== */
+.code-submission-block {
+    background: rgba(13, 17, 23, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: auto;
+    max-height: 500px;
+}
+
+.code-display {
+    padding: 20px 24px;
+    margin: 0;
+    color: #e6edf3;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.no-code-text {
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    margin: 0;
+}

@@ -78,6 +78,11 @@ export const sessionsAPI = {
     getById: async (id) => {
         const response = await api.get(`/sessions/${id}`);
         return response.data;
+    },
+
+    getByExam: async (examId) => {
+        const response = await api.get(`/sessions/exam/${examId}`);
+        return response.data;
     }
 };
 

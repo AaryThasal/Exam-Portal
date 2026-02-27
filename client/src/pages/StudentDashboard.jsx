@@ -37,8 +37,12 @@ function StudentDashboard() {
         }
     };
 
-    const handleStartExam = (examId) => {
-        navigate(`/exam/${examId}`);
+    const handleStartExam = (exam) => {
+        if (exam.type === 'Coding') {
+            navigate(`/coding-exam/${exam._id}`);
+        } else {
+            navigate(`/exam/${exam._id}`);
+        }
     };
 
     const handleLogout = () => {
@@ -107,14 +111,14 @@ function StudentDashboard() {
                                     </div>
                                     <h4>{exam.title}</h4>
                                     <p className="exam-questions">
-                                        {exam.questions?.length || 0} Questions
+                                        {exam.type === 'Coding' ? 'Coding Problem' : `${exam.questions?.length || 0} Questions`}
                                     </p>
                                     <p className="exam-creator">
                                         By: {exam.createdBy?.name || 'Admin'}
                                     </p>
                                     <button
                                         className="start-exam-btn"
-                                        onClick={() => handleStartExam(exam._id)}
+                                        onClick={() => handleStartExam(exam)}
                                     >
                                         🚀 Start Exam
                                     </button>

@@ -26,6 +26,17 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET /api/sessions/exam/:examId - Get sessions for a specific exam
+router.get('/exam/:examId', async (req, res) => {
+    try {
+        const sessions = await ExamSession.find({ examId: req.params.examId }).sort({ createdAt: -1 });
+        res.json(sessions);
+    } catch (error) {
+        console.error('Get sessions by exam error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // GET /api/sessions/:id - Get a single session by ID
 router.get('/:id', async (req, res) => {
     try {

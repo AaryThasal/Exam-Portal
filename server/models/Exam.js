@@ -32,6 +32,11 @@ const examSchema = new mongoose.Schema({
         required: true
     },
     questions: [questionSchema],
+    // Coding exam fields
+    problemDescription: {
+        type: String,
+        default: ''
+    },
     duration: {
         type: Number,
         default: 30 // minutes
