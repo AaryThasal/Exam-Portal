@@ -8,6 +8,7 @@ import {
     isFullscreen
 } from '../utils/fullscreen';
 import { requestCamera, stopCamera, monitorCamera } from '../utils/camera';
+import { monitorCameraInterruption } from '../utils/cameraInterruption';
 import { monitorIdle } from '../utils/idle';
 import '../styles/ExamPage.css';
 
@@ -24,6 +25,7 @@ function ExamPage() {
     const [fullscreenViolations, setFullscreenViolations] = useState(0);
     const [tabViolations, setTabViolations] = useState(0);
     const [cameraViolations, setCameraViolations] = useState(0);
+    const [cameraInterruptions, setCameraInterruptions] = useState(0);
     const [cameraStream, setCameraStream] = useState(null);
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [isBlurred, setIsBlurred] = useState(false);
@@ -150,6 +152,42 @@ function ExamPage() {
                         });
                     } catch (error) {
                         console.error('Failed to log camera violation:', error);
+                    }
+                }
+            },
+            () => setIsBlurred(false)
+        );
+
+        return cleanup;
+    }, [examStarted, examSubmitted, exam, user, cameraStream]);
+
+    // Camera interruption detection (obstruction, dark/frozen feed)
+    useEffect(() => {
+        if (!examStarted || examSubmitted || !exam || !user || !cameraStream) return;
+
+        // Pass a getter function so the monitor can poll for the video element
+        // (it may not be mounted yet when this effect first runs)
+        const cleanup = monitorCameraInterruption(
+            cameraStream,
+            () => videoRef.current,
+            async (count) => {
+                setCameraInterruptions(count);
+                setIsBlurred(true);
+
+                const key = `cam_int_${count}`;
+                if (!violationsLogged.current.has(key)) {
+                    violationsLogged.current.add(key);
+                    try {
+                        await violationsAPI.log({
+                            examId: exam._id,
+                            examTitle: exam.title,
+                            studentId: user._id,
+                            studentName: user.name,
+                            studentEmail: user.email,
+                            violationType: 'camera_interruption'
+                        });
+                    } catch (error) {
+                        console.error('Failed to log camera interruption:', error);
                     }
                 }
             },
@@ -323,15 +361,16 @@ function ExamPage() {
                 fullscreenExits: fullscreenViolations,
                 tabSwitches: tabViolations,
                 cameraOffs: cameraViolations,
+                cameraInterruptions: cameraInterruptions,
                 idleEvents: idleEvents,
-                totalViolations: fullscreenViolations + tabViolations + cameraViolations,
+                totalViolations: fullscreenViolations + tabViolations + cameraViolations + cameraInterruptions,
                 score: { correct, total: exam.questions.length },
                 examType: 'MCQ'
             });
         } catch (error) {
             console.error('Failed to save session:', error);
         }
-    }, [exam, selectedAnswers, cameraStream, user, fullscreenViolations, tabViolations, cameraViolations, idleEvents]);
+    }, [exam, selectedAnswers, cameraStream, user, fullscreenViolations, tabViolations, cameraViolations, cameraInterruptions, idleEvents]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
@@ -339,7 +378,7 @@ function ExamPage() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const totalViolations = fullscreenViolations + tabViolations + cameraViolations;
+    const totalViolations = fullscreenViolations + tabViolations + cameraViolations + cameraInterruptions;
 
     if (loading) {
         return (

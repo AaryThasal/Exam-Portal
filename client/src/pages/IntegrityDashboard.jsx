@@ -103,6 +103,7 @@ function IntegrityDashboard() {
                                         <th>Fullscreen Exits</th>
                                         <th>Tab Switches</th>
                                         <th>Camera Off</th>
+                                        <th>Camera Interruptions</th>
                                         <th>Total Violations</th>
                                         {selectedExam.type === 'MCQ' && <th>Score</th>}
                                         {selectedExam.type === 'Coding' && <th>Code</th>}
@@ -135,6 +136,11 @@ function IntegrityDashboard() {
                                             <td className="count-cell">
                                                 <span className={session.cameraOffs > 0 ? 'has-violations-text' : ''}>
                                                     {session.cameraOffs || 0}
+                                                </span>
+                                            </td>
+                                            <td className="count-cell">
+                                                <span className={session.cameraInterruptions > 0 ? 'has-violations-text' : ''}>
+                                                    {session.cameraInterruptions || 0}
                                                 </span>
                                             </td>
                                             <td className="count-cell">
