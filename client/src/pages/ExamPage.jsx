@@ -567,7 +567,7 @@ function ExamPage() {
                 </div>
             )}
 
-            {/* Camera Preview — enlarged with live indicator */}
+            {/* Camera Preview */}
             {cameraStream && (
                 <div className="camera-preview">
                     <video
@@ -576,10 +576,6 @@ function ExamPage() {
                         playsInline
                         muted
                     />
-                    <div className="camera-label">
-                        <span className="live-dot" />
-                        <span>LIVE</span>
-                    </div>
                 </div>
             )}
         </div>

@@ -650,19 +650,19 @@
     background: rgba(102, 126, 234, 0.1);
 }
 
-/* ===== Camera Preview (Enlarged + Live Indicator) ===== */
+/* ===== Camera Preview ===== */
 .camera-preview {
     position: fixed;
     top: 80px;
     right: 24px;
-    width: 280px;
-    height: 210px;
+    width: 320px;
+    height: 240px;
     border-radius: 16px;
     overflow: hidden;
-    border: 2px solid rgba(56, 239, 125, 0.35);
+    border: 2px solid rgba(56, 239, 125, 0.4);
     box-shadow:
         0 10px 40px rgba(0, 0, 0, 0.55),
-        0 0 0 1px rgba(255, 255, 255, 0.04);
+        0 0 0 1px rgba(255, 255, 255, 0.06);
     z-index: 100;
     background: #000;
 }
@@ -675,36 +675,14 @@
     transform: scaleX(-1);
 }
 
-.camera-label {
-    position: absolute;
-    top: 10px;
-    left: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.7rem;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.65);
-    padding: 4px 12px;
-    border-radius: 8px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-}
-
-.live-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #ef4444;
-    display: inline-block;
-    animation: pulse-dot 1.4s infinite;
-}
-
-@keyframes pulse-dot {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
-    70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+@media (max-width: 768px) {
+    .camera-preview {
+        width: 200px;
+        height: 150px;
+        top: 70px;
+        right: 12px;
+        border-radius: 12px;
+    }
 }
 
 /* ===== Idle Warning Toast ===== */

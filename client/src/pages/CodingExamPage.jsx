@@ -470,10 +470,6 @@ function CodingExamPage() {
                         playsInline
                         muted
                     />
-                    <div className="camera-label">
-                        <span className="live-dot" />
-                        <span>LIVE</span>
-                    </div>
                 </div>
             )}
         </div>
