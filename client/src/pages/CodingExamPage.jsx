@@ -7,7 +7,7 @@ import {
     handleTabSwitch,
     isFullscreen
 } from '../utils/fullscreen';
-import { requestCamera, stopCamera, monitorCamera } from '../utils/camera';
+import { requestCamera, stopCamera } from '../utils/camera';
 import { monitorCameraInterruption } from '../utils/cameraInterruption';
 import '../styles/CodingExamPage.css';
 
@@ -22,7 +22,6 @@ function CodingExamPage() {
     const [code, setCode] = useState('');
     const [fullscreenViolations, setFullscreenViolations] = useState(0);
     const [tabViolations, setTabViolations] = useState(0);
-    const [cameraViolations, setCameraViolations] = useState(0);
     const [cameraInterruptions, setCameraInterruptions] = useState(0);
     const [cameraStream, setCameraStream] = useState(null);
     const [timeRemaining, setTimeRemaining] = useState(0);
@@ -122,39 +121,6 @@ function CodingExamPage() {
 
         return cleanup;
     }, [examStarted, examSubmitted, exam, user]);
-
-    // Camera monitoring
-    useEffect(() => {
-        if (!examStarted || examSubmitted || !exam || !user || !cameraStream) return;
-
-        const cleanup = monitorCamera(
-            cameraStream,
-            async (count) => {
-                setCameraViolations(count);
-                setIsBlurred(true);
-
-                const key = `cam_${count}`;
-                if (!violationsLogged.current.has(key)) {
-                    violationsLogged.current.add(key);
-                    try {
-                        await violationsAPI.log({
-                            examId: exam._id,
-                            examTitle: exam.title,
-                            studentId: user._id,
-                            studentName: user.name,
-                            studentEmail: user.email,
-                            violationType: 'camera_off'
-                        });
-                    } catch (error) {
-                        console.error('Failed to log camera violation:', error);
-                    }
-                }
-            },
-            () => setIsBlurred(false)
-        );
-
-        return cleanup;
-    }, [examStarted, examSubmitted, exam, user, cameraStream]);
 
     // Camera interruption detection (obstruction, dark/frozen feed)
     useEffect(() => {
@@ -325,10 +291,9 @@ function CodingExamPage() {
                 duration: durationMin,
                 fullscreenExits: fullscreenViolations,
                 tabSwitches: tabViolations,
-                cameraOffs: cameraViolations,
                 cameraInterruptions: cameraInterruptions,
                 idleEvents: 0,
-                totalViolations: fullscreenViolations + tabViolations + cameraViolations + cameraInterruptions,
+                totalViolations: fullscreenViolations + tabViolations + cameraInterruptions,
                 score: { correct: 0, total: 0 },
                 examType: 'Coding',
                 codeSubmission: code
@@ -336,7 +301,7 @@ function CodingExamPage() {
         } catch (error) {
             console.error('Failed to save session:', error);
         }
-    }, [exam, code, cameraStream, user, fullscreenViolations, tabViolations, cameraViolations, cameraInterruptions]);
+    }, [exam, code, cameraStream, user, fullscreenViolations, tabViolations, cameraInterruptions]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
@@ -344,7 +309,7 @@ function CodingExamPage() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const totalViolations = fullscreenViolations + tabViolations + cameraViolations + cameraInterruptions;
+    const totalViolations = fullscreenViolations + tabViolations + cameraInterruptions;
 
     if (loading) {
         return (

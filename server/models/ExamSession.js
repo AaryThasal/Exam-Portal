@@ -43,10 +43,6 @@ const examSessionSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    cameraOffs: {
-        type: Number,
-        default: 0
-    },
     cameraInterruptions: {
         type: Number,
         default: 0

@@ -45,9 +45,6 @@ router.get('/aggregated', async (req, res) => {
                     tabSwitches: {
                         $sum: { $cond: [{ $eq: ['$violationType', 'tab_switch'] }, 1, 0] }
                     },
-                    cameraOffs: {
-                        $sum: { $cond: [{ $eq: ['$violationType', 'camera_off'] }, 1, 0] }
-                    },
                     idleEvents: {
                         $sum: { $cond: [{ $eq: ['$violationType', 'idle_event'] }, 1, 0] }
                     },
@@ -85,9 +82,6 @@ router.get('/exam/:examId', async (req, res) => {
                     },
                     tabSwitches: {
                         $sum: { $cond: [{ $eq: ['$violationType', 'tab_switch'] }, 1, 0] }
-                    },
-                    cameraOffs: {
-                        $sum: { $cond: [{ $eq: ['$violationType', 'camera_off'] }, 1, 0] }
                     },
                     cameraInterruptions: {
                         $sum: { $cond: [{ $eq: ['$violationType', 'camera_interruption'] }, 1, 0] }

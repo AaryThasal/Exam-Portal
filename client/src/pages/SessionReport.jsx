@@ -141,12 +141,7 @@ function SessionReport() {
                             <span className="violation-type">Tab Switches</span>
                         </div>
                         <div className="violation-card">
-                            <span className="violation-icon">📷</span>
-                            <span className="violation-count">{session.cameraOffs}</span>
-                            <span className="violation-type">Camera Off</span>
-                        </div>
-                        <div className="violation-card">
-                            <span className="violation-icon">🚫</span>
+                            <span className="violation-icon"></span>
                             <span className="violation-count">{session.cameraInterruptions || 0}</span>
                             <span className="violation-type">Camera Interruptions</span>
                         </div>
