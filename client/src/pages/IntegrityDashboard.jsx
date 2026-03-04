@@ -42,9 +42,11 @@ function IntegrityDashboard() {
     const getExamStats = (examId) => {
         const examSessions = sessions.filter(s => s.examId === examId);
         const totalViolations = examSessions.reduce((sum, s) => sum + (s.totalViolations || 0), 0);
+        const autoSubmitted = examSessions.filter(s => s.autoSubmitReason === 'face_not_detected').length;
         return {
             studentsAttempted: examSessions.length,
-            totalViolations
+            totalViolations,
+            autoSubmitted
         };
     };
 
@@ -77,11 +79,11 @@ function IntegrityDashboard() {
                         <button className="back-btn" onClick={() => setSelectedExam(null)}>
                             ← Back to Exams
                         </button>
-                        <h1>📋 {selectedExam.title}</h1>
+                        <h1>📊 {selectedExam.title} — Exam Report</h1>
                     </div>
                     <div className="header-stats">
                         <span className="exam-type-pill">{selectedExam.type}</span>
-                        <span>Sessions: <strong>{examSessions.length}</strong></span>
+                        <span>Submissions: <strong>{examSessions.length}</strong></span>
                     </div>
                 </header>
 
@@ -89,7 +91,7 @@ function IntegrityDashboard() {
                     {examSessions.length === 0 ? (
                         <div className="no-violations">
                             <span className="no-violations-icon">📋</span>
-                            <h2>No Sessions</h2>
+                            <h2>No Submissions Yet</h2>
                             <p>No students have attempted this exam yet.</p>
                         </div>
                     ) : (
@@ -103,7 +105,9 @@ function IntegrityDashboard() {
                                         <th>Fullscreen Exits</th>
                                         <th>Tab Switches</th>
                                         <th>Camera Interruptions</th>
+                                        <th>Face Not Detected</th>
                                         <th>Total Violations</th>
+                                        <th>Status</th>
                                         {selectedExam.type === 'MCQ' && <th>Score</th>}
                                         {selectedExam.type === 'Coding' && <th>Code</th>}
                                         <th>Action</th>
@@ -138,9 +142,26 @@ function IntegrityDashboard() {
                                                 </span>
                                             </td>
                                             <td className="count-cell">
+                                                <span className={session.faceNotDetected > 0 ? 'has-violations-text' : ''}>
+                                                    {session.faceNotDetected || 0}
+                                                    {session.autoSubmitReason === 'face_not_detected' && (
+                                                        <span className="auto-submit-badge" title="Exam was auto-submitted due to face not detected">
+                                                            ⛔
+                                                        </span>
+                                                    )}
+                                                </span>
+                                            </td>
+                                            <td className="count-cell">
                                                 <span className={session.totalViolations > 0 ? 'has-violations-text' : ''}>
                                                     {session.totalViolations || 0}
                                                 </span>
+                                            </td>
+                                            <td className="count-cell">
+                                                {session.autoSubmitReason === 'face_not_detected' ? (
+                                                    <span className="status-badge auto-submitted">⛔ Auto-Submitted</span>
+                                                ) : (
+                                                    <span className="status-badge completed">✅ Completed</span>
+                                                )}
                                             </td>
                                             {selectedExam.type === 'MCQ' && (
                                                 <td className="count-cell">
@@ -182,11 +203,11 @@ function IntegrityDashboard() {
                     <button className="back-btn" onClick={() => navigate('/admin/dashboard')}>
                         ← Back to Dashboard
                     </button>
-                    <h1>📋 Exam-wise Violations & Reports</h1>
+                    <h1>📊 Exam Reports</h1>
                 </div>
                 <div className="header-stats">
                     <span>Total Exams: <strong>{exams.length}</strong></span>
-                    <span>Total Sessions: <strong>{sessions.length}</strong></span>
+                    <span>Total Submissions: <strong>{sessions.length}</strong></span>
                 </div>
             </header>
 
@@ -195,7 +216,7 @@ function IntegrityDashboard() {
                     <div className="no-violations">
                         <span className="no-violations-icon">📋</span>
                         <h2>No Exams Created</h2>
-                        <p>Create exams first to see violations and reports.</p>
+                        <p>Create exams first to see reports.</p>
                     </div>
                 ) : (
                     <div className="exams-violations-grid">
@@ -219,7 +240,7 @@ function IntegrityDashboard() {
                                     <div className="evc-stats">
                                         <div className="evc-stat">
                                             <span className="evc-stat-value">{stats.studentsAttempted}</span>
-                                            <span className="evc-stat-label">Students</span>
+                                            <span className="evc-stat-label">Submissions</span>
                                         </div>
                                         <div className="evc-stat">
                                             <span className={`evc-stat-value ${stats.totalViolations > 0 ? 'has-violations-text' : ''}`}>
@@ -233,7 +254,7 @@ function IntegrityDashboard() {
                                         </div>
                                     </div>
                                     <div className="evc-footer">
-                                        <span className="view-details-link">View Details →</span>
+                                        <span className="view-details-link">View Report →</span>
                                     </div>
                                 </div>
                             );

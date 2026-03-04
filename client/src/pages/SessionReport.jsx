@@ -53,15 +53,17 @@ function SessionReport() {
 
     if (!session) return null;
 
-    const integrityScore = session.totalViolations === 0
+    const totalWithFace = (session.totalViolations || 0) + (session.faceNotDetected || 0);
+
+    const integrityScore = totalWithFace === 0
         ? 'Excellent'
-        : session.totalViolations <= 2
+        : totalWithFace <= 2
             ? 'Fair'
             : 'Poor';
 
-    const integrityClass = session.totalViolations === 0
+    const integrityClass = totalWithFace === 0
         ? 'excellent'
-        : session.totalViolations <= 2
+        : totalWithFace <= 2
             ? 'fair'
             : 'poor';
 
@@ -69,9 +71,9 @@ function SessionReport() {
         <div className="report-page">
             <header className="report-header">
                 <button className="back-btn" onClick={() => navigate('/admin/violations')}>
-                    ← Back to Violations
+                    ← Back to Exam Reports
                 </button>
-                <h1>📋 Session Integrity Report</h1>
+                <h1>📊 Exam Session Report</h1>
             </header>
 
             <main className="report-content">
@@ -94,13 +96,13 @@ function SessionReport() {
                         </div>
                     </div>
                     {session.examType !== 'Coding' && (
-                    <div className="info-card">
-                        <span className="info-icon">🏆</span>
-                        <div>
-                            <span className="info-label">Score</span>
-                            <span className="info-value">{session.score?.correct}/{session.score?.total}</span>
+                        <div className="info-card">
+                            <span className="info-icon">🏆</span>
+                            <div>
+                                <span className="info-label">Score</span>
+                                <span className="info-value">{session.score?.correct}/{session.score?.total}</span>
+                            </div>
                         </div>
-                    </div>
                     )}
                 </div>
 
@@ -145,12 +147,27 @@ function SessionReport() {
                             <span className="violation-count">{session.cameraInterruptions || 0}</span>
                             <span className="violation-type">Camera Interruptions</span>
                         </div>
+                        <div className={`violation-card ${session.faceNotDetected > 0 ? 'face-violation' : ''}`}>
+                            <span className="violation-icon">👤</span>
+                            <span className="violation-count">{session.faceNotDetected || 0}</span>
+                            <span className="violation-type">Face Not Detected</span>
+                        </div>
                         <div className="violation-card total-card">
                             <span className="violation-icon">⚠️</span>
                             <span className="violation-count">{session.totalViolations}</span>
                             <span className="violation-type">Total Violations</span>
                         </div>
                     </div>
+
+                    {session.autoSubmitReason === 'face_not_detected' && (
+                        <div className="auto-submit-banner">
+                            <span className="auto-submit-icon">⛔</span>
+                            <div>
+                                <strong>Exam Auto-Submitted</strong>
+                                <p>This exam was automatically submitted because the student's face was not detected during the active session.</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Code Submission (Coding exams only) */}

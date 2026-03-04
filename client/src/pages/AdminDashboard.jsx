@@ -96,7 +96,7 @@ function AdminDashboard() {
                             className="view-violations-btn"
                             onClick={() => navigate('/admin/violations')}
                         >
-                            ⚠️ View Violations
+                            📊 Exam Reports
                         </button>
                     </div>
                 </div>

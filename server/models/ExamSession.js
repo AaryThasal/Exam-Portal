@@ -67,6 +67,14 @@ const examSessionSchema = new mongoose.Schema({
     codeSubmission: {
         type: String,
         default: ''
+    },
+    faceNotDetected: {
+        type: Number,
+        default: 0
+    },
+    autoSubmitReason: {
+        type: String,
+        default: ''
     }
 }, {
     timestamps: true

@@ -10,6 +10,7 @@ import {
 import { requestCamera, stopCamera } from '../utils/camera';
 import { monitorCameraInterruption } from '../utils/cameraInterruption';
 import { monitorIdle } from '../utils/idle';
+import { monitorFaceDetection } from '../utils/faceDetection';
 import '../styles/ExamPage.css';
 
 function ExamPage() {
@@ -30,10 +31,13 @@ function ExamPage() {
     const [isBlurred, setIsBlurred] = useState(false);
     const [idleEvents, setIdleEvents] = useState(0);
     const [showIdleWarning, setShowIdleWarning] = useState(false);
+    const [faceNotDetected, setFaceNotDetected] = useState(0);
+    const [autoSubmitReason, setAutoSubmitReason] = useState('');
     const violationsLogged = useRef(new Set());
     const idleEventsLogged = useRef(new Set());
     const videoRef = useRef(null);
     const examStartTime = useRef(null);
+    const faceSubmitTriggered = useRef(false);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -232,6 +236,45 @@ function ExamPage() {
         return cleanup;
     }, [examStarted, examSubmitted, exam, user]);
 
+    // Face detection — auto-submit if face absent for sustained duration
+    useEffect(() => {
+        if (!examStarted || examSubmitted || !exam || !user || !cameraStream) return;
+
+        const cleanup = monitorFaceDetection(
+            () => videoRef.current,
+            async () => {
+                if (faceSubmitTriggered.current) return;
+                faceSubmitTriggered.current = true;
+
+                setFaceNotDetected(1);
+                setAutoSubmitReason('face_not_detected');
+
+                // Log the violation
+                const key = 'face_not_detected_auto';
+                if (!violationsLogged.current.has(key)) {
+                    violationsLogged.current.add(key);
+                    try {
+                        await violationsAPI.log({
+                            examId: exam._id,
+                            examTitle: exam.title,
+                            studentId: user._id,
+                            studentName: user.name,
+                            studentEmail: user.email,
+                            violationType: 'face_not_detected'
+                        });
+                    } catch (error) {
+                        console.error('Failed to log face not detected violation:', error);
+                    }
+                }
+
+                // Auto-submit the exam
+                handleSubmit('face_not_detected');
+            }
+        );
+
+        return cleanup;
+    }, [examStarted, examSubmitted, exam, user, cameraStream]);
+
     // Callback ref to attach camera stream as soon as video element mounts
     const setCameraVideoRef = useCallback((el) => {
         videoRef.current = el;
@@ -295,7 +338,9 @@ function ExamPage() {
         });
     };
 
-    const handleSubmit = useCallback(async () => {
+    const handleSubmit = useCallback(async (submitReason) => {
+        // Sanitize: if called from onClick, submitReason is a React event, not a string
+        const reason = typeof submitReason === 'string' ? submitReason : '';
         setExamSubmitted(true);
         if (cameraStream) {
             stopCamera(cameraStream);
@@ -314,6 +359,8 @@ function ExamPage() {
         const durationMs = endTime - startTime;
         const durationMin = Math.round(durationMs / 60000);
 
+        const faceCount = reason === 'face_not_detected' ? 1 : 0;
+
         try {
             await sessionsAPI.create({
                 examId: exam._id,
@@ -328,9 +375,11 @@ function ExamPage() {
                 tabSwitches: tabViolations,
                 cameraInterruptions: cameraInterruptions,
                 idleEvents: idleEvents,
-                totalViolations: fullscreenViolations + tabViolations + cameraInterruptions,
+                faceNotDetected: faceCount,
+                totalViolations: fullscreenViolations + tabViolations + cameraInterruptions + faceCount,
                 score: { correct, total: exam.questions.length },
-                examType: 'MCQ'
+                examType: 'MCQ',
+                autoSubmitReason: reason
             });
         } catch (error) {
             console.error('Failed to save session:', error);

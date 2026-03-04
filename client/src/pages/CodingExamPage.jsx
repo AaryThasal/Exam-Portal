@@ -9,6 +9,7 @@ import {
 } from '../utils/fullscreen';
 import { requestCamera, stopCamera } from '../utils/camera';
 import { monitorCameraInterruption } from '../utils/cameraInterruption';
+import { monitorFaceDetection } from '../utils/faceDetection';
 import '../styles/CodingExamPage.css';
 
 function CodingExamPage() {
@@ -26,9 +27,12 @@ function CodingExamPage() {
     const [cameraStream, setCameraStream] = useState(null);
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [isBlurred, setIsBlurred] = useState(false);
+    const [faceNotDetected, setFaceNotDetected] = useState(0);
+    const [autoSubmitReason, setAutoSubmitReason] = useState('');
     const violationsLogged = useRef(new Set());
     const videoRef = useRef(null);
     const examStartTime = useRef(null);
+    const faceSubmitTriggered = useRef(false);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -158,6 +162,43 @@ function CodingExamPage() {
         return cleanup;
     }, [examStarted, examSubmitted, exam, user, cameraStream]);
 
+    // Face detection — auto-submit if face absent for sustained duration
+    useEffect(() => {
+        if (!examStarted || examSubmitted || !exam || !user || !cameraStream) return;
+
+        const cleanup = monitorFaceDetection(
+            () => videoRef.current,
+            async () => {
+                if (faceSubmitTriggered.current) return;
+                faceSubmitTriggered.current = true;
+
+                setFaceNotDetected(1);
+                setAutoSubmitReason('face_not_detected');
+
+                const key = 'face_not_detected_auto';
+                if (!violationsLogged.current.has(key)) {
+                    violationsLogged.current.add(key);
+                    try {
+                        await violationsAPI.log({
+                            examId: exam._id,
+                            examTitle: exam.title,
+                            studentId: user._id,
+                            studentName: user.name,
+                            studentEmail: user.email,
+                            violationType: 'face_not_detected'
+                        });
+                    } catch (error) {
+                        console.error('Failed to log face not detected violation:', error);
+                    }
+                }
+
+                handleSubmit('face_not_detected');
+            }
+        );
+
+        return cleanup;
+    }, [examStarted, examSubmitted, exam, user, cameraStream]);
+
     // Disable copying of problem description, right-click, but allow typing in code editor
     useEffect(() => {
         if (!examStarted || examSubmitted) return;
@@ -267,7 +308,9 @@ function CodingExamPage() {
         }
     };
 
-    const handleSubmit = useCallback(async () => {
+    const handleSubmit = useCallback(async (submitReason) => {
+        // Sanitize: if called from onClick, submitReason is a React event, not a string
+        const reason = typeof submitReason === 'string' ? submitReason : '';
         setExamSubmitted(true);
         if (cameraStream) {
             stopCamera(cameraStream);
@@ -278,6 +321,8 @@ function CodingExamPage() {
         const startTime = examStartTime.current || endTime;
         const durationMs = endTime - startTime;
         const durationMin = Math.round(durationMs / 60000);
+
+        const faceCount = reason === 'face_not_detected' ? 1 : 0;
 
         try {
             await sessionsAPI.create({
@@ -293,10 +338,12 @@ function CodingExamPage() {
                 tabSwitches: tabViolations,
                 cameraInterruptions: cameraInterruptions,
                 idleEvents: 0,
-                totalViolations: fullscreenViolations + tabViolations + cameraInterruptions,
+                faceNotDetected: faceCount,
+                totalViolations: fullscreenViolations + tabViolations + cameraInterruptions + faceCount,
                 score: { correct: 0, total: 0 },
                 examType: 'Coding',
-                codeSubmission: code
+                codeSubmission: code,
+                autoSubmitReason: reason
             });
         } catch (error) {
             console.error('Failed to save session:', error);

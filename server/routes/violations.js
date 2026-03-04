@@ -50,6 +50,9 @@ router.get('/aggregated', async (req, res) => {
                     },
                     cameraInterruptions: {
                         $sum: { $cond: [{ $eq: ['$violationType', 'camera_interruption'] }, 1, 0] }
+                    },
+                    faceNotDetected: {
+                        $sum: { $cond: [{ $eq: ['$violationType', 'face_not_detected'] }, 1, 0] }
                     }
                 }
             },
@@ -85,6 +88,9 @@ router.get('/exam/:examId', async (req, res) => {
                     },
                     cameraInterruptions: {
                         $sum: { $cond: [{ $eq: ['$violationType', 'camera_interruption'] }, 1, 0] }
+                    },
+                    faceNotDetected: {
+                        $sum: { $cond: [{ $eq: ['$violationType', 'face_not_detected'] }, 1, 0] }
                     },
                     totalViolations: { $sum: 1 }
                 }

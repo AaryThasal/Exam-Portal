@@ -163,7 +163,7 @@
 /* Violations Grid */
 .violations-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 16px;
 }
 
@@ -203,6 +203,47 @@
 
 .total-card .violation-count {
     color: #ef4444;
+}
+
+.face-violation {
+    border-color: rgba(249, 115, 22, 0.3);
+    background: rgba(249, 115, 22, 0.08);
+}
+
+.face-violation .violation-count {
+    color: #f97316;
+}
+
+/* Auto-submit banner */
+.auto-submit-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-top: 20px;
+    padding: 18px 22px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 14px;
+}
+
+.auto-submit-icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.auto-submit-banner strong {
+    color: #ef4444;
+    font-size: 1rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.auto-submit-banner p {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
 }
 
 /* Loading */
