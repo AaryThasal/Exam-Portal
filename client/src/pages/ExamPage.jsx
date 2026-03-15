@@ -38,6 +38,7 @@ function ExamPage() {
     const videoRef = useRef(null);
     const examStartTime = useRef(null);
     const faceSubmitTriggered = useRef(false);
+    const handleSubmitRef = useRef(null);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -236,6 +237,7 @@ function ExamPage() {
         return cleanup;
     }, [examStarted, examSubmitted, exam, user]);
 
+
     // Face detection — auto-submit if face absent for sustained duration
     useEffect(() => {
         if (!examStarted || examSubmitted || !exam || !user || !cameraStream) return;
@@ -267,8 +269,10 @@ function ExamPage() {
                     }
                 }
 
-                // Auto-submit the exam
-                handleSubmit('face_not_detected');
+                // Auto-submit using ref to get the latest handleSubmit (avoids stale closure)
+                if (handleSubmitRef.current) {
+                    handleSubmitRef.current('face_not_detected');
+                }
             }
         );
 
@@ -385,6 +389,11 @@ function ExamPage() {
             console.error('Failed to save session:', error);
         }
     }, [exam, selectedAnswers, cameraStream, user, fullscreenViolations, tabViolations, cameraInterruptions, idleEvents]);
+
+    // Keep handleSubmitRef in sync with the latest handleSubmit
+    useEffect(() => {
+        handleSubmitRef.current = handleSubmit;
+    }, [handleSubmit]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);

@@ -2,7 +2,7 @@ import * as faceapi from '@vladmandic/face-api';
 
 // --- Configuration ---
 const CHECK_INTERVAL_MS = 500;              // Target interval between checks (500ms)
-const CONSECUTIVE_MISSES_TO_TRIGGER = 30;   // 30 consecutive misses = ~15 seconds
+const CONSECUTIVE_MISSES_TO_TRIGGER = 10;   // 10 consecutive misses = ~5 seconds
 const WARMUP_MS = 5000;                     // 5-second warm-up (camera + model settle)
 const MODEL_URL = '/models';                // TinyFaceDetector weights in public/models/
 
