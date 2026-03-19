@@ -76,30 +76,12 @@ function StudentDashboard() {
 
             {/* Main Content */}
             <main className="dashboard-content">
-                <div className="dashboard-info">
-                    <div className="info-card">
-                        <span className="info-icon">📋</span>
-                        <div>
-                            <h3>Available Exams</h3>
-                            <p>{exams.length} exam(s) ready</p>
-                        </div>
-                    </div>
-                    <div className="info-card warning-card">
-                        <span className="info-icon">⚠️</span>
-                        <div>
-                            <h3>Important</h3>
-                            <p>Exams require fullscreen mode</p>
-                        </div>
-                    </div>
-                </div>
-
                 <div className="exams-section">
                     <h3>Your Examinations</h3>
 
                     {exams.length === 0 ? (
                         <div className="no-exams">
-                            <p>No exams available at the moment.</p>
-                            <p>Check back later or contact your administrator.</p>
+                            <p>No exams available</p>
                         </div>
                     ) : (
                         <div className="exams-grid">
@@ -112,9 +94,6 @@ function StudentDashboard() {
                                     <h4>{exam.title}</h4>
                                     <p className="exam-questions">
                                         {exam.type === 'Coding' ? 'Coding Problem' : `${exam.questions?.length || 0} Questions`}
-                                    </p>
-                                    <p className="exam-creator">
-                                        By: {exam.createdBy?.name || 'Admin'}
                                     </p>
                                     <button
                                         className="start-exam-btn"
