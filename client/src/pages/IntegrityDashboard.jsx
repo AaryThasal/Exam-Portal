@@ -207,7 +207,6 @@ function IntegrityDashboard() {
                 </div>
                 <div className="header-stats">
                     <span>Total Exams: <strong>{exams.length}</strong></span>
-                    <span>Total Submissions: <strong>{sessions.length}</strong></span>
                 </div>
             </header>
 
