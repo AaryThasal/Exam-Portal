@@ -123,6 +123,11 @@
     background: rgba(255, 255, 255, 0.08);
 }
 
+.form-group select option {
+    background: #1a1a2e;
+    color: #ffffff;
+}
+
 .form-group input::placeholder,
 .form-group textarea::placeholder {
     color: rgba(255, 255, 255, 0.4);
