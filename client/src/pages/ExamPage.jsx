@@ -467,6 +467,7 @@ function ExamPage() {
                 correct++;
             }
         });
+        const percentage = totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0;
 
         return (
             <div className="exam-page exam-completed">
@@ -483,6 +484,10 @@ function ExamPage() {
                             <div className="result-item">
                                 <span className="result-label">Correct Answers</span>
                                 <span className="result-value correct">{correct}/{totalQuestions}</span>
+                            </div>
+                            <div className="result-item">
+                                <span className="result-label">Score</span>
+                                <span className={`result-value ${percentage >= 50 ? 'correct' : 'violations'}`}>{percentage}%</span>
                             </div>
                             <div className="result-item">
                                 <span className="result-label">Violations</span>
