@@ -201,9 +201,6 @@ function CreateExam() {
                     <section className="form-section questions-section">
                         <div className="section-header">
                             <h2>Questions ({examData.questions.length})</h2>
-                            <button type="button" className="add-question-btn" onClick={addQuestion}>
-                                + Add Question
-                            </button>
                         </div>
 
                         {examData.questions.map((question, qIndex) => (
@@ -255,6 +252,10 @@ function CreateExam() {
                                 </div>
                             </div>
                         ))}
+
+                        <button type="button" className="add-question-btn" onClick={addQuestion}>
+                            + Add Question
+                        </button>
                     </section>
                     )}
 

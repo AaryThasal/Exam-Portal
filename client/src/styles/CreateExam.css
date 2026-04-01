@@ -224,6 +224,10 @@
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
+.questions-section > .add-question-btn {
+    margin-top: 8px;
+}
+
 .form-actions {
     display: flex;
     justify-content: flex-end;
